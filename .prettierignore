@@ -1,0 +1,44 @@
+# Build output
+.vite/
+dist/
+out/
+build/
+
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# IDE and editor files
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Package manager files
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Configuration files that should maintain their format
+.eslintrc.json
+tsconfig.json
+forge.config.ts
+vite.*.config.ts
+
+# Python virtual environment
+.venv/
+.mypy_cache/
+
+# Git
+.git/ 

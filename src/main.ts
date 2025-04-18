@@ -2,6 +2,9 @@ import { app, BrowserWindow } from 'electron'
 import path from 'node:path'
 import started from 'electron-squirrel-startup'
 import { startLogger, stopLogger } from './logger'
+import { generateSessionUuid } from './sessionUuid'
+
+const sessionUuid = generateSessionUuid()
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -11,10 +14,11 @@ if (started) {
 const createWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
-    width: 200,
-    height: 200,
+    width: 400,
+    height: 400,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+      additionalArguments: [sessionUuid],
     },
     frame: false,
     resizable: false,

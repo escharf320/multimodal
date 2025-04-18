@@ -11,6 +11,13 @@ opencv-python = "^4.11.0.86"
 mediapipe = "^0.10.21"
 
 
+[tool.poetry.group.dev.dependencies]
+black = "^25.1.0"
+poethepoet = "^0.33.1"
+
+[tool.poe.tasks]
+hand_detector = "python hand_detector/hand_detector.py"
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

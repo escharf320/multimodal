@@ -17,7 +17,10 @@ const createWindow = () => {
       preload: path.join(__dirname, 'preload.js'),
     },
     frame: false,
+    resizable: false,
   })
+
+  mainWindow.setAlwaysOnTop(true, 'screen-saver')
 
   // and load the index.html of the app.
   if (MAIN_WINDOW_VITE_DEV_SERVER_URL) {

@@ -20,9 +20,8 @@ export default function StreamingQRCode({ uuid }: StreamingQRCodeProps) {
   }, [])
 
   return (
-    <div className="mt-2 text-center">
-      <QRCodeSVG value={`${uuid}@${timestamp}`} size={340} />
-      <p>{timestamp}</p>
+    <div className="my-2 text-center">
+      <QRCodeSVG value={`${uuid}@${timestamp}`} size={290} />
     </div>
   )
 }

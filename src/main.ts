@@ -1,10 +1,13 @@
-import { app, BrowserWindow } from 'electron'
+import { app, BrowserWindow, ipcMain, shell } from 'electron'
 import path from 'node:path'
 import started from 'electron-squirrel-startup'
-import { startLogger, stopLogger } from './logger'
+import { startKeyLogger, stopKeyLogger } from './keyLogger'
 import { generateSessionUuid } from './sessionUuid'
 
 const sessionUuid = generateSessionUuid()
+const appDataDir = app.getPath('appData')
+const keyLoggerDir = path.join(appDataDir, 'multimodal-type-tool', 'keyLogger')
+const keyLoggerFile = path.join(keyLoggerDir, `${sessionUuid}.log`)
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (started) {
@@ -15,13 +18,17 @@ const createWindow = () => {
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 400,
-    height: 400,
+    height: 420,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       additionalArguments: [sessionUuid],
     },
     frame: false,
     resizable: false,
+  })
+
+  ipcMain.handle('openKeyLoggerDirectory', () => {
+    shell.openPath(keyLoggerDir)
   })
 
   // and load the index.html of the app.
@@ -39,7 +46,7 @@ const createWindow = () => {
 // Some APIs can only be used after this event occurs.
 app.on('ready', () => {
   createWindow()
-  startLogger()
+  startKeyLogger(keyLoggerFile)
 })
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -60,7 +67,7 @@ app.on('activate', () => {
 })
 
 app.on('before-quit', () => {
-  stopLogger()
+  stopKeyLogger()
 })
 
 // In this file you can include the rest of your app's specific main process

@@ -3,8 +3,9 @@
 // See the Electron documentation for details on how to use preload scripts:
 // https://www.electronjs.org/docs/latest/tutorial/process-model#preload-scripts
 
-const { contextBridge } = require('electron')
+const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('API', {
   getSessionUuid: () => process.argv.slice(-1)[0], // gets the session uuid from the additional arguments
+  openKeyLoggerDirectory: () => ipcRenderer.invoke('openKeyLoggerDirectory'),
 })

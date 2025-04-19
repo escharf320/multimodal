@@ -7,6 +7,7 @@ import re
 import mediapipe as mp
 from predict_timestamps import predict_missing_timestamps
 
+
 def process_video_with_joints(video_path):
     mp_hands = mp.solutions.hands
     hands = mp_hands.Hands(min_detection_confidence=0.5, min_tracking_confidence=0.5)
@@ -15,9 +16,10 @@ def process_video_with_joints(video_path):
     cap = cv2.VideoCapture(video_path)
     frame_number = 0
     frame_data = []  # stores (frame_number, timestamp)
-    joint_positions = []  # stores (frame_number, [[right_hand_landmarks], [left_hand_landmarks]]) 
+    joint_positions = (
+        []
+    )  # stores (frame_number, [[right_hand_landmarks], [left_hand_landmarks]])
     timestamp_pattern = re.compile(r"[a-zA-Z0-9\-]+@(\d+)")
-
 
     while cap.isOpened():
         ret, frame = cap.read()
@@ -47,32 +49,18 @@ def process_video_with_joints(video_path):
         if results.multi_hand_landmarks:
             hand_landmarks = []
             for landmarks in results.multi_hand_landmarks:
-                hand_landmarks.append(
-                    [(lm.x, lm.y, lm.z) for lm in landmarks.landmark]
-                )
-        joint_positions.append((frame_number, hand_landmarks)) 
+                hand_landmarks.append([(lm.x, lm.y, lm.z) for lm in landmarks.landmark])
+        joint_positions.append((frame_number, hand_landmarks))
 
     cap.release()
     cv2.destroyAllWindows()
 
     # Fill missing timestamps using linear regression
     filled_data = predict_missing_timestamps(frame_data)
-    
+
     ordered_output = []
-    for (f, timestamp) in filled_data:
+    for f, timestamp in filled_data:
         _, joint_pos = joint_positions[f - 1]
-        ordered_output.append((timestamp, joint_pos))  
+        ordered_output.append((timestamp, joint_pos))
 
     return ordered_output
-
-
-#### TESTING ####
-video_path = "/Users/eli/Downloads/typing_example2.mov"
-result = process_video_with_joints(video_path)
-for timestamp, joints in result:
-    print(type(timestamp))
-    print(type(joints))
-    print(f"Timestamp: {timestamp}, Joints: {joints}")
-    break 
-    
-

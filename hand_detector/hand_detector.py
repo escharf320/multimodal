@@ -7,7 +7,9 @@ hands = mp_hands.Hands(min_detection_confidence=0.5, min_tracking_confidence=0.5
 mp_drawing = mp.solutions.drawing_utils
 
 # Start capturing from the webcam
-cap = cv2.VideoCapture(1)
+# cap = cv2.VideoCapture(1)
+video_path = "/Users/eli/Downloads/typing_example2.mov"
+cap = cv2.VideoCapture(video_path)
 
 # print(cv2.getBuildInformation())
 
@@ -37,6 +39,13 @@ while True:
 
     # Display the frame with hand landmarks
     cv2.imshow("Hand Detection", frame)
+
+    #Print the hand landmarks for debugging
+    # print("Hand landmarks:")
+    # if results.multi_hand_landmarks:
+    #     for hand_landmarks in results.multi_hand_landmarks:
+    #         for id, lm in enumerate(hand_landmarks.landmark):
+    #             print(f"Landmark {id}: ({lm.x}, {lm.y}, {lm.z})")
 
     # Break the loop if 'q' is pressed
     if cv2.waitKey(1) & 0xFF == ord('q'):

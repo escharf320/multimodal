@@ -83,7 +83,7 @@ def extract_video_features(
     uuid = None
     uuid_lock = threading.Lock()
 
-    with ThreadPoolExecutor() as executor:
+    with ThreadPoolExecutor(max_workers=1) as executor:
         futures = [
             executor.submit(process_single_frame, frame_data, hands)
             for frame_data in frames

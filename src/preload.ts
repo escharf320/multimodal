@@ -7,5 +7,5 @@ const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('API', {
   getSessionUuid: () => process.argv.slice(-1)[0], // gets the session uuid from the additional arguments
-  openKeyLoggerDirectory: () => ipcRenderer.invoke('openKeyLoggerDirectory'),
+  openKeyLoggerFile: () => ipcRenderer.invoke('openKeyLoggerFile'),
 })

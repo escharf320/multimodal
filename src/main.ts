@@ -27,8 +27,8 @@ const createWindow = () => {
     resizable: false,
   })
 
-  ipcMain.handle('openKeyLoggerDirectory', () => {
-    shell.openPath(keyLoggerDir)
+  ipcMain.handle('openKeyLoggerFile', () => {
+    shell.showItemInFolder(keyLoggerFile)
   })
 
   // and load the index.html of the app.

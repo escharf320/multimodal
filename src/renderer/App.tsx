@@ -9,11 +9,11 @@ export default function App() {
       <button
         className="mt-4 px-4 py-2 bg-gray-100 text-black rounded-lg shadow-sm border border-gray-300 hover:bg-gray-200 transition-colors font-medium text-sm cursor-pointer"
         onClick={() => {
-          console.log('Opening key logger directory')
-          window.API.openKeyLoggerDirectory()
+          console.log('Opening key logger file')
+          window.API.openKeyLoggerFile()
         }}
       >
-        Open KeyLogger Directory
+        Open KeyLogger File
       </button>
     </div>
   )

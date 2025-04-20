@@ -1,14 +1,59 @@
 import re
 import cv2
+import numpy as np
 from pyzbar.pyzbar import decode, ZBarSymbol
 from PIL import Image
 import mediapipe as mp
 from predict_timestamps import predict_missing_timestamps
+from concurrent.futures import ThreadPoolExecutor
+from typing import Tuple, List, Optional, Union
+import threading
 
 
-def extract_video_features(video_path):
+def process_single_frame(
+    frame_data: Tuple[int, np.ndarray], hands: mp.solutions.hands.Hands
+) -> Tuple[int, Optional[str], Optional[int], Optional[List]]:
     """
-    Extracts QR code and hand landmarks from a video file.
+    Process a single frame to extract QR code and hand landmarks.
+
+    Args:
+        frame_data: Tuple containing (frame_number, frame)
+        hands: MediaPipe hands object for processing
+
+    Returns:
+        Tuple containing (frame_number, uuid, timestamp, hand_landmarks)
+    """
+    frame_number, frame = frame_data
+    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+    pil_image = Image.fromarray(rgb_frame)
+
+    # Process QR code
+    decoded_objects = decode(pil_image, symbols=[ZBarSymbol.QRCODE])
+    uuid = None
+    timestamp = None
+    if decoded_objects:
+        decoded_str = decoded_objects[0].data.decode("utf-8")
+        if "@" in decoded_str:
+            decoded_uuid, timestamp = decoded_str.split("@")
+            uuid = decoded_uuid
+            timestamp = int(timestamp)
+
+    # Process hand landmarks
+    results = hands.process(rgb_frame)
+    hand_landmarks = None
+    if results.multi_hand_landmarks:
+        hand_landmarks = []
+        for landmarks in results.multi_hand_landmarks:
+            hand_landmarks.append([(lm.x, lm.y, lm.z) for lm in landmarks.landmark])
+
+    return frame_number, uuid, timestamp, hand_landmarks
+
+
+def extract_video_features(
+    video_path: str,
+) -> Tuple[str, List[Tuple[int, Optional[int]]], List[Optional[List]]]:
+    """
+    Extracts QR code and hand landmarks from a video file in parallel.
 
     Args:
         video_path (str): The path to the video file.
@@ -20,50 +65,51 @@ def extract_video_features(video_path):
     hands = mp_hands.Hands(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
     cap = cv2.VideoCapture(video_path)
-    frame_number = -1  # Start at -1 so that the first += 1 frame is 0
-    frame_timestamp_map = []  # stores (frame_number, timestamp)
-    joint_positions = (
-        []
-    )  # stores [[right_hand_landmarks], [left_hand_landmarks]] or None for every frame
-    uuid = None
+    frames = []
+    frame_number = -1
 
+    # Read all frames first
     while cap.isOpened():
         ret, frame = cap.read()
         if not ret:
             break
-
         frame_number += 1
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        pil_image = Image.fromarray(rgb_frame)
-        decoded_objects = decode(pil_image, symbols=[ZBarSymbol.QRCODE])
-        # Extract timestamp from QR code
-        timestamp = None
-        if decoded_objects:
-            # Decode the QR code format
-            decoded_str = decoded_objects[0].data.decode("utf-8")
-            assert "@" in decoded_str, "No timestamp found in QR code"
-            decoded_uuid, timestamp = decoded_str.split("@")
-
-            # Ensure the UUID doesn't change
-            assert uuid is None or uuid == decoded_uuid, "UUID mismatch"
-            uuid = decoded_uuid
-
-            # Append to the frame data
-            timestamp = int(timestamp)
-            frame_timestamp_map.append((frame_number, timestamp))
-        else:
-            frame_timestamp_map.append((frame_number, None))
-
-        # Process the frame for hand landmarks
-        results = hands.process(rgb_frame)
-        hand_landmarks = None
-        if results.multi_hand_landmarks:
-            hand_landmarks = []
-            for landmarks in results.multi_hand_landmarks:
-                hand_landmarks.append([(lm.x, lm.y, lm.z) for lm in landmarks.landmark])
-        joint_positions.append(hand_landmarks)
+        frames.append((frame_number, frame))
 
     cap.release()
+
+    # Process frames in parallel
+    frame_results = []
+    uuid = None
+    uuid_lock = threading.Lock()
+
+    with ThreadPoolExecutor() as executor:
+        futures = [
+            executor.submit(process_single_frame, frame_data, hands)
+            for frame_data in frames
+        ]
+        for future in futures:
+            frame_number, frame_uuid, timestamp, hand_landmarks = future.result()
+
+            # Handle UUID with thread safety
+            if frame_uuid is not None:
+                with uuid_lock:
+                    if uuid is None:
+                        uuid = frame_uuid
+                    else:
+                        assert uuid == frame_uuid, "UUID mismatch"
+
+            frame_results.append((frame_number, timestamp, hand_landmarks))
+
+    # Sort results by frame number to maintain order
+    frame_results.sort(key=lambda x: x[0])
+
+    # Split results into separate lists
+    frame_timestamp_map = [(f, t) for f, t, _ in frame_results]
+    joint_positions = [j for _, _, j in frame_results]
+
+    if uuid is None:
+        raise ValueError("No UUID found in video frames")
 
     return uuid, frame_timestamp_map, joint_positions
 

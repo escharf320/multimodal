@@ -6,13 +6,22 @@ import mediapipe as mp
 from predict_timestamps import predict_missing_timestamps
 
 
-def process_video_with_joints(video_path):
+def extract_video_features(video_path):
+    """
+    Extracts QR code and hand landmarks from a video file.
+
+    Args:
+        video_path (str): The path to the video file.
+
+    Returns:
+        tuple: A tuple containing the UUID, frame data, and joint positions.
+    """
     mp_hands = mp.solutions.hands
     hands = mp_hands.Hands(min_detection_confidence=0.5, min_tracking_confidence=0.5)
 
     cap = cv2.VideoCapture(video_path)
     frame_number = -1  # Start at -1 so that the first += 1 frame is 0
-    frame_data = []  # stores (frame_number, timestamp)
+    frame_timestamp_map = []  # stores (frame_number, timestamp)
     joint_positions = (
         []
     )  # stores [[right_hand_landmarks], [left_hand_landmarks]] or None for every frame
@@ -41,9 +50,9 @@ def process_video_with_joints(video_path):
 
             # Append to the frame data
             timestamp = int(timestamp)
-            frame_data.append((frame_number, timestamp))
+            frame_timestamp_map.append((frame_number, timestamp))
         else:
-            frame_data.append((frame_number, None))
+            frame_timestamp_map.append((frame_number, None))
 
         # Process the frame for hand landmarks
         results = hands.process(rgb_frame)
@@ -56,12 +65,20 @@ def process_video_with_joints(video_path):
 
     cap.release()
 
-    # Fill missing timestamps using linear regression
-    filled_data = predict_missing_timestamps(frame_data)
+    return uuid, frame_timestamp_map, joint_positions
 
-    ordered_output = []
+
+def process_video_with_joints(video_path):
+    # Extract features from the video
+    uuid, frame_timestamp_map, joint_positions = extract_video_features(video_path)
+
+    # Fill missing timestamps using linear regression
+    filled_data = predict_missing_timestamps(frame_timestamp_map)
+
+    # Combine the infered timestamps with the joint positions
+    timestamp_joints = []
     for f, timestamp in filled_data:
         joint_pos = joint_positions[f]
-        ordered_output.append((timestamp, joint_pos))
+        timestamp_joints.append((timestamp, joint_pos))
 
-    return uuid, ordered_output
+    return uuid, timestamp_joints

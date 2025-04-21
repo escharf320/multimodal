@@ -4,7 +4,7 @@ from typeformar.dataset_generation.loss_array.key_pressed import (
     key_pressed_v1,
     key_pressed_v2,
 )
-from typeformar.dataset_generation.merger import process_logger_file_to_list
+from typeformar.dataset_generation.log_parser import process_logger_file_to_list
 from typeformar.dataset_generation.frame_timestamp_inference import (
     process_video_with_joints,
 )

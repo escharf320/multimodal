@@ -120,7 +120,32 @@ def prepare_dataset():
                 # We update the last frame seen
                 last_f = f
 
-    return all_sequences
+    # Then, go through the all sequences and cut them into sequences of the same
+    # exact format, but by searching for the times where there are 1's consecutively
+    # and then cutting the sequences at those times with padding of size 5
+
+    new_all_sequences = []
+
+    for feature_sequence, output_sequence in all_sequences:
+        # Find the times where there are 1's consecutively
+        # and then cut the sequences at those times with padding of size 5
+
+        # Find the times where there are 1's consecutively
+        BUFFER = 5
+        for i in range(len(output_sequence)):
+            if output_sequence[i] == 1:
+                # Find the start of the sequence
+                start = i
+                while start > 0 and output_sequence[start - 1] == 1:
+                    start -= 1
+                new_all_sequences.append(
+                    (
+                        feature_sequence[start - BUFFER : i + BUFFER + 1],
+                        output_sequence[start - BUFFER : i + BUFFER + 1],
+                    )
+                )
+
+    return new_all_sequences
 
 
 if __name__ == "__main__":

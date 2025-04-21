@@ -11,7 +11,7 @@ FEATURE_DIM = 372  # 20 * 3 * 2 * 2  # 20 landmarks * 3 coordinates (x, y, z)
 HIDDEN_DIM = 50  # hyperparameter to be tuned
 OUTPUT_DIM = 2  # nothing, spacebar down, or spacebar up
 
-EPOCHS = 100
+EPOCHS = 50
 
 ########################################################
 # Architecture
@@ -62,9 +62,8 @@ def prepare_output(output):
     return torch.tensor([output_to_ix[o] for o in output], dtype=torch.long)
 
 
-def print_output_prediction(output):
+def print_output_prediction(pred):
     # Print the output predictions for each landmark
-    pred = torch.argmax(output, dim=1)
     print(" ".join(["_" if o == 0 else "P" for o in pred]))
 
 
@@ -104,4 +103,7 @@ for epoch in range(EPOCHS):
 with torch.no_grad():
     feature_sequence = dataset[-1][0]
     out_scores = model(feature_sequence)
-    print_output_prediction(out_scores)
+    print("Prediction:")
+    print_output_prediction(torch.argmax(out_scores, dim=1))
+    print("Ground truth:")
+    print_output_prediction(dataset[-1][1])

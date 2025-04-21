@@ -67,9 +67,15 @@ def generate_feature_vector(timestamp_joints):
     """
     left_tensor, right_tensor = tensorize_joints(timestamp_joints)
     left_velocity, right_velocity = extract_velocity(left_tensor, right_tensor)
-    left_normalized, right_normalized = normalize_joints(left_velocity, right_velocity)
+    left_normalized, right_normalized = normalize_joints(left_tensor, right_tensor)
     return torch.cat(
-        (left_normalized, right_normalized, left_velocity, right_velocity), dim=0
+        (
+            left_normalized,
+            right_normalized,
+            left_velocity,
+            right_velocity,
+        ),
+        dim=0,
     ).view(-1)
 
 

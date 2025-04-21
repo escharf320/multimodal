@@ -133,7 +133,7 @@ def prepare_dataset():
         # Find the times where there are 1's consecutively
         BUFFER = 5
         for i in range(len(output_sequence)):
-            if output_sequence[i] == 1:
+            if output_sequence[i] == 1 and output_sequence[i + 1] != 1:
                 # Find the start of the sequence
                 start = i
                 while start > 0 and output_sequence[start - 1] == 1:
@@ -154,4 +154,3 @@ if __name__ == "__main__":
     for feature_sequence, output_sequence in dataset:
         print(feature_sequence)
         print(output_sequence)
-        break

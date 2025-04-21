@@ -7,11 +7,11 @@ from typeformar.spacebar_detection.dataset_preparation import prepare_dataset
 
 torch.manual_seed(1)
 
-FEATURE_DIM = 246  # 20 * 3 * 2 * 2  # 20 landmarks * 3 coordinates (x, y, z)
-HIDDEN_DIM = 2000  # hyperparameter to be tuned
+FEATURE_DIM = 372  # 20 * 3 * 2 * 2  # 20 landmarks * 3 coordinates (x, y, z)
+HIDDEN_DIM = 50  # hyperparameter to be tuned
 OUTPUT_DIM = 2  # nothing, spacebar down, or spacebar up
 
-EPOCHS = 300
+EPOCHS = 100
 
 ########################################################
 # Architecture
@@ -28,10 +28,7 @@ class SpacebarDetectorLSTM(nn.Module):
         self.lstm = nn.LSTM(
             feature_dim,
             hidden_dim,
-            batch_first=True,
             bidirectional=True,
-            num_layers=10,
-            dropout=0.2,
         )
 
         # Linear layer to map from hidden state to output (2 * hidden_dim because bidirectional)

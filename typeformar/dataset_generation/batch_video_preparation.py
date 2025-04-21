@@ -43,9 +43,15 @@ if __name__ == "__main__":
 
     videos_to_process = []
     for video_path in video_paths:
-        uuid, inferred_timestamp_map = extract_uuid_and_timestamps(video_path)
-        if not has_video_been_processed(uuid):
-            videos_to_process.append((video_path, uuid, inferred_timestamp_map))
+        try:
+            uuid, inferred_timestamp_map = extract_uuid_and_timestamps(video_path)
+            if not has_video_been_processed(uuid):
+                videos_to_process.append((video_path, uuid, inferred_timestamp_map))
+        except AssertionError as e:
+            if "All timestamps are None" in str(e):
+                print(f"Skipping video {uuid} because no QR code was found.")
+            else:
+                raise e
 
     print(f"Found {len(videos_to_process)} videos to process.")
 

@@ -111,6 +111,7 @@ def extract_uuid_and_timestamps(
 
     # Sort results by frame number to maintain order
     frame_results.sort(key=lambda x: x[0])
+    assert not all(t is None for _, t in frame_results), "All timestamps are None"
     frame_results = predict_missing_timestamps(frame_results)
 
     if uuid is None:

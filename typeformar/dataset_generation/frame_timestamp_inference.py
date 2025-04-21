@@ -4,7 +4,7 @@ import numpy as np
 from pyzbar.pyzbar import decode, ZBarSymbol
 from PIL import Image
 import mediapipe as mp
-from predict_timestamps import predict_missing_timestamps
+from .predict_timestamps import predict_missing_timestamps
 from concurrent.futures import ThreadPoolExecutor
 from typing import Tuple, List, Optional, Union
 import threading

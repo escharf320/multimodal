@@ -1,15 +1,4 @@
-from frame_timestamp_inference import process_video_with_joints
 import json
-import os
-
-####### TESTING #######
-video_path = os.path.join(
-    os.path.dirname(__file__), "..", "..", "data", "abc_video.mov"
-)
-logger_path = os.path.join(os.path.dirname(__file__), "..", "..", "data", "abc.log")
-
-
-print(logger_path)
 
 
 def preprocess_log_dict(log_dict):
@@ -38,7 +27,7 @@ def process_logger_file_to_list(logger_path):
     """
     log_dicts = []
 
-    with open(logger_path, "r") as file:
+    with open(logger_path, "r", encoding="utf-8") as file:
         for line in file:
             if line.strip():
                 try:

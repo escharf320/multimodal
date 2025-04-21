@@ -1,5 +1,5 @@
 [tool.poetry]
-name = "multimodal"
+name = "TypeFormAR"
 version = "0.1.0"
 description = ""
 authors = ["Eli Scharf <escharf@mit.edu>", "Jacob Daitzman <jdtzmn@mit.edu>"]

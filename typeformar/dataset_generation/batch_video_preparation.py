@@ -30,6 +30,17 @@ def read_from_file(name):
         return pickle.load(f)
 
 
+def list_pickle_files():
+    """List all the pickle files in the data directory"""
+    return [f for f in os.listdir(data_dir) if f.endswith(".pkl")]
+
+
+def read_pickle_files():
+    """Read all the pickle files in the data directory"""
+    files = list_pickle_files()
+    return [read_from_file(f) for f in files]
+
+
 if __name__ == "__main__":
     # 1. Read the video paths from the data directory
     # If the video is already processed, skip it

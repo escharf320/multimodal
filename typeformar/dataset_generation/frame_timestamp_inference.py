@@ -1,27 +1,26 @@
-import re
+import time
 import cv2
 import numpy as np
 from pyzbar.pyzbar import decode, ZBarSymbol
 from PIL import Image
 import mediapipe as mp
-from .predict_timestamps import predict_missing_timestamps
+from predict_timestamps import predict_missing_timestamps
 from concurrent.futures import ThreadPoolExecutor
 from typing import Tuple, List, Optional, Union
 import threading
 
 
-def process_single_frame(
-    frame_data: Tuple[int, np.ndarray], hands: mp.solutions.hands.Hands
-) -> Tuple[int, Optional[str], Optional[int], Optional[List]]:
+def process_single_qr_frame(
+    frame_data: Tuple[int, np.ndarray],
+) -> Tuple[int, Optional[str], Optional[int]]:
     """
-    Process a single frame to extract QR code and hand landmarks.
+    Process a single frame to extract QR code.
 
     Args:
         frame_data: Tuple containing (frame_number, frame)
-        hands: MediaPipe hands object for processing
 
     Returns:
-        Tuple containing (frame_number, uuid, timestamp, hand_landmarks)
+        Tuple containing (frame_number, uuid, timestamp)
     """
     frame_number, frame = frame_data
     rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -38,7 +37,20 @@ def process_single_frame(
             uuid = decoded_uuid
             timestamp = int(timestamp)
 
-    # Process hand landmarks
+    return frame_number, uuid, timestamp
+
+
+def process_single_hand_frame(
+    frame_data: Tuple[int, np.ndarray], hands: mp.solutions.hands.Hands
+) -> Tuple[int, Optional[List]]:
+    """
+    Process a single frame to extract hand landmarks.
+
+    IMPORTANT: These frames must be processed in order otherwise MediaPipe fails.
+    """
+    frame_number, frame = frame_data
+    rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+
     results = hands.process(rgb_frame)
     hand_landmarks = None
     if results.multi_hand_landmarks:
@@ -46,7 +58,7 @@ def process_single_frame(
         for landmarks in results.multi_hand_landmarks:
             hand_landmarks.append([(lm.x, lm.y, lm.z) for lm in landmarks.landmark])
 
-    return frame_number, uuid, timestamp, hand_landmarks
+    return frame_number, hand_landmarks
 
 
 def extract_video_features(
@@ -78,18 +90,24 @@ def extract_video_features(
 
     cap.release()
 
-    # Process frames in parallel
+    # Process hand frames sequentially and fill in hand landmarks
+    frame_hand_landmarks = []
+    for frame_data in frames:
+        frame_number, hand_landmarks = process_single_hand_frame(frame_data, hands)
+        frame_hand_landmarks.append(hand_landmarks)
+
+    # Process QR frames in parallel
     frame_results = []
     uuid = None
     uuid_lock = threading.Lock()
 
-    with ThreadPoolExecutor(max_workers=1) as executor:
+    with ThreadPoolExecutor() as executor:
         futures = [
-            executor.submit(process_single_frame, frame_data, hands)
+            executor.submit(process_single_qr_frame, frame_data)
             for frame_data in frames
         ]
         for future in futures:
-            frame_number, frame_uuid, timestamp, hand_landmarks = future.result()
+            frame_number, frame_uuid, timestamp = future.result()
 
             # Handle UUID with thread safety
             if frame_uuid is not None:
@@ -99,7 +117,9 @@ def extract_video_features(
                     else:
                         assert uuid == frame_uuid, "UUID mismatch"
 
-            frame_results.append((frame_number, timestamp, hand_landmarks))
+            frame_results.append(
+                (frame_number, timestamp, frame_hand_landmarks[frame_number])
+            )
 
     # Sort results by frame number to maintain order
     frame_results.sort(key=lambda x: x[0])

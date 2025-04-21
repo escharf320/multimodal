@@ -20,7 +20,7 @@ scikit-learn = "^1.6.1"
 pylint = "^3.3.6"
 
 [tool.poe.tasks]
-hand_detector = "python hand_detector/hand_detector.py"
+video-prep = "python typeformar/dataset_generation/batch_video_preparation.py"
 
 [build-system]
 requires = ["poetry-core"]

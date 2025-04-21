@@ -1,5 +1,6 @@
 import os
 import pickle
+from tqdm import tqdm
 from frame_timestamp_inference import (
     extract_uuid_and_timestamps,
     extract_joint_positions,
@@ -42,22 +43,24 @@ if __name__ == "__main__":
     print("Running QR code inference...")
 
     videos_to_process = []
-    for video_path in video_paths:
+    for video_path in tqdm(video_paths):
         try:
             uuid, inferred_timestamp_map = extract_uuid_and_timestamps(video_path)
             if not has_video_been_processed(uuid):
                 videos_to_process.append((video_path, uuid, inferred_timestamp_map))
         except AssertionError as e:
             if "All timestamps are None" in str(e):
-                print(f"Skipping video {uuid} because no QR code was found.")
+                tqdm.write(
+                    f"Skipping video {os.path.basename(video_path)} because no QR code was found."
+                )
             else:
                 raise e
 
     print(f"Found {len(videos_to_process)} videos to process.")
 
     # 2. For each unprocessed video, extract the features and the hand landmarks
-    for video_path, uuid, inferred_timestamp_map in videos_to_process:
-        print(f"Processing video {uuid}...")
+    for video_path, uuid, inferred_timestamp_map in tqdm(videos_to_process):
+        tqdm.write(f"Processing video {uuid}...")
         joint_positions = extract_joint_positions(video_path)
 
         timestamp_joints = []
@@ -67,5 +70,5 @@ if __name__ == "__main__":
 
         logger_path = os.path.join(data_dir, f"{uuid}.log")
         parsed_log_dicts = process_logger_file_to_list(logger_path)
-        print(f"Saving video {uuid} to file...")
+        tqdm.write(f"Saving video {uuid} to file...")
         save_to_file(uuid, timestamp_joints, parsed_log_dicts)

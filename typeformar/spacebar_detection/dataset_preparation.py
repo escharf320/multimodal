@@ -70,6 +70,8 @@ def generate_feature_vector(timestamp_joints):
     left_normalized, right_normalized = normalize_joints(left_tensor, right_tensor)
     return torch.cat(
         (
+            left_tensor,
+            right_tensor,
             left_normalized,
             right_normalized,
             left_velocity,
@@ -82,11 +84,11 @@ def generate_feature_vector(timestamp_joints):
 def prepare_dataset():
     all_sequences = []
 
-    last_f = -1
-    current_feature_sequence = []
-    current_output_sequence = []
-
     for trial_datum in trials_data:
+        last_f = -1
+        current_feature_sequence = []
+        current_output_sequence = []
+
         for f, joint_data in enumerate(trial_datum["timestamp_joints"]):
             _, joints = joint_data
 

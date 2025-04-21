@@ -1,11 +1,11 @@
 import os
 import pickle
 from tqdm import tqdm
-from frame_timestamp_inference import (
+from typeformar.dataset_generation.frame_timestamp_inference import (
     extract_uuid_and_timestamps,
     extract_joint_positions,
 )
-from log_parser import process_logger_file_to_list
+from typeformar.dataset_generation.log_parser import process_logger_file_to_list
 
 data_dir = os.path.join(os.path.dirname(__file__), "..", "..", "data")
 
@@ -23,9 +23,9 @@ def save_to_file(name, timestamp_joints, parsed_log_dicts):
         pickle.dump({"timestamp_joints": timestamp_joints, "logs": parsed_log_dicts}, f)
 
 
-def read_from_file(name):
+def read_from_file(file_name):
     """Read the timestamp_joints and log_dicts from a pickle file"""
-    file_path = os.path.join(data_dir, f"{name}.pkl")
+    file_path = os.path.join(data_dir, file_name)
     with open(file_path, "rb") as f:
         return pickle.load(f)
 

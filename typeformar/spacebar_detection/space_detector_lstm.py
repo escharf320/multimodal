@@ -10,7 +10,7 @@ from typeformar.spacebar_detection.dataset_preparation import prepare_dataset
 torch.manual_seed(1)
 
 FEATURE_DIM = 624  # 20 * 3 * 2 * 2  # 20 landmarks * 3 coordinates (x, y, z)
-HIDDEN_DIM = 20  # hyperparameter to be tuned
+HIDDEN_DIM = 100  # hyperparameter to be tuned
 OUTPUT_DIM = 2  # nothing, spacebar down, or spacebar up
 
 EPOCHS = 600

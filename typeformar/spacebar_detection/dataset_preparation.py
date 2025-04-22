@@ -152,9 +152,9 @@ def prepare_dataset():
         # and then cut the sequences at those times with padding of size 5
 
         # Find the times where there are 1's consecutively
-        # Pick between 1 and 7 as the buffer size
-        L_BUFFER = random.randint(1, 7)
-        R_BUFFER = random.randint(1, 7)
+        # Pick randomly between the buffer size
+        L_BUFFER = random.randint(1, 15)
+        R_BUFFER = random.randint(1, 15)
         for i in range(len(output_sequence)):
             if output_sequence[i] == 1 and output_sequence[i + 1] != 1:
                 # Find the start of the sequence

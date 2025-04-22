@@ -61,6 +61,15 @@ def normalize_joints(left_tensor, right_tensor):
     return left_normalized, right_normalized
 
 
+def extract_relative_positions_from_palms(left_tensor, right_tensor):
+    """
+    Extract the relative positions of the palms from the timestamp_joints
+    """
+    left_relative = left_tensor - left_tensor[0]
+    right_relative = right_tensor - right_tensor[0]
+    return left_relative, right_relative
+
+
 def generate_feature_vector(timestamp_joints):
     """
     Generate a feature vector from the timestamp_joints
@@ -68,6 +77,12 @@ def generate_feature_vector(timestamp_joints):
     left_tensor, right_tensor = tensorize_joints(timestamp_joints)
     left_velocity, right_velocity = extract_velocity(left_tensor, right_tensor)
     left_normalized, right_normalized = normalize_joints(left_tensor, right_tensor)
+    left_relative, right_relative = extract_relative_positions_from_palms(
+        left_tensor, right_tensor
+    )
+    left_relative_normalized, right_relative_normalized = normalize_joints(
+        left_relative, right_relative
+    )
     return torch.cat(
         (
             left_tensor,
@@ -76,6 +91,10 @@ def generate_feature_vector(timestamp_joints):
             right_normalized,
             left_velocity,
             right_velocity,
+            left_relative,
+            right_relative,
+            left_relative_normalized,
+            right_relative_normalized,
         ),
         dim=0,
     ).view(-1)
@@ -84,7 +103,7 @@ def generate_feature_vector(timestamp_joints):
 def prepare_dataset():
     all_sequences = []
 
-    for trial_datum in trials_data:
+    for i, trial_datum in enumerate(trials_data):
         last_f = -1
         current_feature_sequence = []
         current_output_sequence = []
@@ -95,7 +114,7 @@ def prepare_dataset():
             # Defined and has 2 hands
             if joints is not None and len(joints) == 2:
                 feature_vector = generate_feature_vector(joints)
-                output_element = 1 if spacebar_pressed_lists[0][f] else 0
+                output_element = 1 if spacebar_pressed_lists[i][f] else 0
 
                 # If the current frame is the next frame, we add the feature vector
                 # and the output element to the current sequence

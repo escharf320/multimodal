@@ -31,6 +31,7 @@ class SpacebarDetectorLSTM(nn.Module):
             feature_dim,
             hidden_dim,
             bidirectional=True,
+            num_layers=5,
         )
 
         # Linear layer to map from hidden state to output (2 * hidden_dim because bidirectional)

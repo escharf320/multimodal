@@ -1,15 +1,9 @@
-import os
-import pickle
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Button
-from mpl_toolkits.mplot3d import Axes3D
-import torch
 from typeformar.dataset_generation.batch_video_preparation import (
     read_pickle_files,
-    read_from_file,
     list_pickle_files,
-    data_dir,
 )
 
 key_dict = {
@@ -92,8 +86,17 @@ class JointVisualizer:
 
     def next_frame(self, event):
         timestamp_joints = self.trials_data[self.current_trial]["timestamp_joints"]
-        if self.current_frame < len(timestamp_joints) - 1:
-            self.current_frame += 1
+        # Check if shift key is pressed (event.key == 'shift')
+        if hasattr(event, "modifiers") and "shift" in event.modifiers:
+            # Jump forward 10 frames if shift is pressed
+            step = 10
+        else:
+            step = 1
+
+        # Calculate new frame index, ensuring we don't go beyond the available frames
+        new_frame = min(self.current_frame + step, len(timestamp_joints) - 1)
+        if new_frame > self.current_frame:
+            self.current_frame = new_frame
             self.update_plot()
 
     def first_valid_frame(self, event):
@@ -209,12 +212,12 @@ class JointVisualizer:
 
     def decode_keypresses_near(self, log_dicts, timestamp):
         # Find the log dicts near the timestamp
-        BUFFER = 1000  # milliseconds
+        BUFFER = 2000  # milliseconds
         downs = []
         for log_dict in log_dicts:
             if (
                 log_dict["time"] > timestamp - BUFFER
-                and log_dict["time"] < timestamp + BUFFER
+                and log_dict["time"] < timestamp  # DON'T BUFFER FOR THE FUTURE
                 and log_dict["type"] == "down"
                 and log_dict["keycode"] in key_dict
             ):

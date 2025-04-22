@@ -7,11 +7,11 @@ from typeformar.spacebar_detection.dataset_preparation import prepare_dataset
 
 torch.manual_seed(1)
 
-FEATURE_DIM = 372  # 20 * 3 * 2 * 2  # 20 landmarks * 3 coordinates (x, y, z)
-HIDDEN_DIM = FEATURE_DIM  # hyperparameter to be tuned
+FEATURE_DIM = 624  # 20 * 3 * 2 * 2  # 20 landmarks * 3 coordinates (x, y, z)
+HIDDEN_DIM = 20  # hyperparameter to be tuned
 OUTPUT_DIM = 2  # nothing, spacebar down, or spacebar up
 
-EPOCHS = 50
+EPOCHS = 300
 
 ########################################################
 # Architecture
@@ -73,7 +73,7 @@ def print_output_prediction(pred):
 
 model = SpacebarDetectorLSTM(FEATURE_DIM, HIDDEN_DIM, OUTPUT_DIM)
 loss_fn = nn.CrossEntropyLoss()
-optimizer = optim.Adam(model.parameters(), lr=0.01)
+optimizer = optim.SGD(model.parameters(), lr=0.01)
 
 # See what the scores are before training
 # with torch.no_grad():

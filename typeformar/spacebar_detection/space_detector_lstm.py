@@ -115,3 +115,8 @@ with torch.no_grad():
         torch.sum(torch.argmax(out_scores, dim=1) == ground_truth) / len(ground_truth)
     )
 
+# Save the model to models directory
+models_dir = os.path.join(os.path.dirname(__file__), "..", "..", "models")
+os.makedirs(models_dir, exist_ok=True)
+model_path = os.path.join(models_dir, "spacebar_detector_lstm.pth")
+torch.save(model.state_dict(), model_path)

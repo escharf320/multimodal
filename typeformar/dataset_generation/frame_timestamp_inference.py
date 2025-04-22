@@ -52,7 +52,7 @@ def process_single_hand_frame(
 
     results = hands.process(rgb_frame)
     hand_landmarks = None
-    if results.multi_hand_landmarks:
+    if results.multi_hand_world_landmarks:
         hand_landmarks = []
         for landmarks in results.multi_hand_landmarks:
             hand_landmarks.append([(lm.x, lm.y, lm.z) for lm in landmarks.landmark])

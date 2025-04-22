@@ -151,6 +151,8 @@ def prepare_dataset():
 if __name__ == "__main__":
     # Prepare the dataset and then print a sample
     dataset = prepare_dataset()
-    for feature_sequence, output_sequence in dataset:
+    for feature_sequence, output_sequence in dataset[1:]:
+        print(feature_sequence.shape)
         print(feature_sequence)
         print(output_sequence)
+        break

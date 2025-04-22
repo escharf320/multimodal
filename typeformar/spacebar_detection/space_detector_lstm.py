@@ -1,3 +1,5 @@
+import os
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -11,7 +13,7 @@ FEATURE_DIM = 624  # 20 * 3 * 2 * 2  # 20 landmarks * 3 coordinates (x, y, z)
 HIDDEN_DIM = 20  # hyperparameter to be tuned
 OUTPUT_DIM = 2  # nothing, spacebar down, or spacebar up
 
-EPOCHS = 300
+EPOCHS = 1
 
 ########################################################
 # Architecture
@@ -47,7 +49,7 @@ class SpacebarDetectorLSTM(nn.Module):
 # Prepare Training Data
 ########################################################
 
-dataset = prepare_dataset()
+dataset, test_sequences = prepare_dataset()
 
 print("Dataset size: ", len(dataset))
 
@@ -101,9 +103,15 @@ for epoch in range(EPOCHS):
 
 # See what the scores are after training
 with torch.no_grad():
-    feature_sequence = dataset[-1][0]
+    first_test_sequence = test_sequences[0]
+    feature_sequence, ground_truth = first_test_sequence
     out_scores = model(feature_sequence)
     print("Prediction:")
     print_output_prediction(torch.argmax(out_scores, dim=1))
     print("Ground truth:")
-    print_output_prediction(dataset[-1][1])
+    print_output_prediction(ground_truth)
+    print("Accuracy:")
+    print(
+        torch.sum(torch.argmax(out_scores, dim=1) == ground_truth) / len(ground_truth)
+    )
+

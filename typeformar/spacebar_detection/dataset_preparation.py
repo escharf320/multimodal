@@ -164,12 +164,12 @@ def prepare_dataset():
                     )
                 )
 
-    return new_all_sequences
+    return new_all_sequences, all_sequences
 
 
 if __name__ == "__main__":
     # Prepare the dataset and then print a sample
-    dataset = prepare_dataset()
+    dataset, _ = prepare_dataset()
     for feature_sequence, output_sequence in dataset[1:]:
         print(feature_sequence.shape)
         print(feature_sequence)

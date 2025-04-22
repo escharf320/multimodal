@@ -1,3 +1,5 @@
+import random
+
 import torch
 from typeformar.dataset_generation.batch_video_preparation import read_pickle_files
 from typeformar.dataset_generation.loss_array.key_pressed import key_pressed_v2
@@ -150,7 +152,9 @@ def prepare_dataset():
         # and then cut the sequences at those times with padding of size 5
 
         # Find the times where there are 1's consecutively
-        BUFFER = 5
+        # Pick between 1 and 7 as the buffer size
+        L_BUFFER = random.randint(1, 7)
+        R_BUFFER = random.randint(1, 7)
         for i in range(len(output_sequence)):
             if output_sequence[i] == 1 and output_sequence[i + 1] != 1:
                 # Find the start of the sequence
@@ -159,8 +163,8 @@ def prepare_dataset():
                     start -= 1
                 new_all_sequences.append(
                     (
-                        feature_sequence[start - BUFFER : i + BUFFER + 1],
-                        output_sequence[start - BUFFER : i + BUFFER + 1],
+                        feature_sequence[start - L_BUFFER : i + R_BUFFER + 1],
+                        output_sequence[start - L_BUFFER : i + R_BUFFER + 1],
                     )
                 )
 

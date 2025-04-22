@@ -49,8 +49,7 @@ class SpacebarDetectorLSTM(nn.Module):
 # Prepare Training Data
 ########################################################
 
-small_sequences, full_sequences = prepare_dataset()
-dataset = small_sequences + full_sequences
+dataset, test_sequences = prepare_dataset()
 
 print("Dataset size: ", len(dataset))
 
@@ -104,7 +103,7 @@ for epoch in range(EPOCHS):
 
 # See what the scores are after training
 with torch.no_grad():
-    first_test_sequence = dataset[0]
+    first_test_sequence = test_sequences[0]
     feature_sequence, ground_truth = first_test_sequence
     out_scores = model(feature_sequence)
     print("Prediction:")

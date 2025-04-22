@@ -12,6 +12,36 @@ from typeformar.dataset_generation.batch_video_preparation import (
     data_dir,
 )
 
+key_dict = {
+    57: "_",
+    30: "A",
+    48: "B",
+    46: "C",
+    32: "D",
+    18: "E",
+    33: "F",
+    34: "G",
+    35: "H",
+    23: "I",
+    36: "J",
+    37: "K",
+    38: "L",
+    50: "M",
+    49: "N",
+    24: "O",
+    25: "P",
+    16: "Q",
+    19: "R",
+    31: "S",
+    20: "T",
+    22: "U",
+    47: "V",
+    17: "W",
+    45: "X",
+    21: "Y",
+    44: "Z",
+}
+
 
 class JointVisualizer:
     def __init__(self, trials_data):
@@ -81,10 +111,22 @@ class JointVisualizer:
         timestamp_joints = self.trials_data[self.current_trial]["timestamp_joints"]
         timestamp, joints = timestamp_joints[self.current_frame]
 
+        # Get the typed text near the timestamp
+        log_dicts = self.trials_data[self.current_trial]["logs"]
+        typed_text = self.decode_keypresses_near(log_dicts, timestamp)
+
         # Check if joints data is valid
         if joints is not None and len(joints) == 2:
             left_hand = np.array(joints[0])
             right_hand = np.array(joints[1])
+
+            # Invert the z-axis
+            left_hand[:, 2] = -left_hand[:, 2]
+            right_hand[:, 2] = -right_hand[:, 2]
+
+            # Invert the y-axis
+            left_hand[:, 1] = -left_hand[:, 1]
+            right_hand[:, 1] = -right_hand[:, 1]
 
             # Plot left hand joints (red)
             self.ax.scatter(
@@ -159,11 +201,26 @@ class JointVisualizer:
         # Set title with trial, frame, and timestamp information
         trial_name = list_pickle_files()[self.current_trial].replace(".pkl", "")
         self.ax.set_title(
-            f"Trial: {trial_name} | Frame: {self.current_frame} | Timestamp: {timestamp}"
+            f"Trial: {trial_name} | Frame: {self.current_frame} | Timestamp: {timestamp}\nTyped Text: {typed_text}"
         )
 
         self.ax.legend()
         self.fig.canvas.draw_idle()
+
+    def decode_keypresses_near(self, log_dicts, timestamp):
+        # Find the log dicts near the timestamp
+        BUFFER = 1000  # milliseconds
+        downs = []
+        for log_dict in log_dicts:
+            if (
+                log_dict["time"] > timestamp - BUFFER
+                and log_dict["time"] < timestamp + BUFFER
+                and log_dict["type"] == "down"
+                and log_dict["keycode"] in key_dict
+            ):
+                downs.append(key_dict[log_dict["keycode"]])
+
+        return " ".join(downs)
 
     def plot_hand_connections(self, hand_joints, color):
         # MediaPipe hand connections

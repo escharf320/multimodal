@@ -13,7 +13,7 @@ FEATURE_DIM = 624  # 20 * 3 * 2 * 2  # 20 landmarks * 3 coordinates (x, y, z)
 HIDDEN_DIM = 20  # hyperparameter to be tuned
 OUTPUT_DIM = 2  # nothing, spacebar down, or spacebar up
 
-EPOCHS = 300
+EPOCHS = 600
 
 ########################################################
 # Architecture
@@ -49,7 +49,8 @@ class SpacebarDetectorLSTM(nn.Module):
 # Prepare Training Data
 ########################################################
 
-_, dataset = prepare_dataset()
+small_sequences, full_sequences = prepare_dataset()
+dataset = small_sequences + full_sequences
 
 print("Dataset size: ", len(dataset))
 

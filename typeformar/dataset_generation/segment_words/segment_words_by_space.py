@@ -13,12 +13,22 @@ def endpoint_indicies(space_pressed_truths:list):
     num_diff_segs = len(boolean_segments)
 
 
-    for i in range(num_diff_segs-1):
-        _, _, start, _ = boolean_segments[i]
-        _, _, _, end = boolean_segments[i+1]
+    for i in range(num_diff_segs-2):
+        _, boolean, start, _ = boolean_segments[i]
+        _, _, end, _ = boolean_segments[i+2]
+
+        if boolean: #skip adding the joint movements for spaces (this adds joint movements for the spaces as if they were words)
+            continue 
 
         words_indices.append((start, end))
     
+    _, _, s1, e1 = boolean_segments[-2]
+    _, _, s2, e2= boolean_segments[-1]
+
+
+    #adding the last segment becuase we skip it in the loop. 
+    words_indices.append((s1, e2))
+ 
     return words_indices
         
 
@@ -76,10 +86,14 @@ def segment_joints_by_space_pressed(timestamp_joint_list, space_pressed_truths):
 
 
     
-#### TESTTING ####
-# values = [True, True, False, False, True, False, True, True, False, False]
-# timestamp_joint_list = [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0]] # dummy data for testing
+# #### TESTTING ####
+# values = [False, True, False, False, True, False, True, True, False, False]
+# # [(0,2), (2,5), (5,8), (6, 9)]
+# timestamp_joint_list = [[0, 0], [1, 0], [2, 0], [3, 0], [4, 0], [5, 0], [6, 0], [7, 0], [8, 0], [9, 0]] 
 
 
-# segs = segment_joints_by_space_pressed(timestamp_joint_list, values)
+# segs = endpoint_indicies(values)
 # print("Segmented Joints: ", segs)
+# print(len(segs), " segments found")
+
+

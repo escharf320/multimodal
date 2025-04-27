@@ -80,7 +80,31 @@ def segment_joints_by_space_pressed(timestamp_joint_list, space_pressed_truths):
     return segmented_joints
 
 
+def segment_joints_by_word(timestamp_joints, timestamped_words, buffer=100):
+    """
+    Segments joints based on words.
+    
+    Args:
+        timestamp_joints: List of joint data with timestamps
+        timestamped_words: List of words with their corresponding timestamps
+    
+    Returns:
+        A list of tuples containing the joint data and the corresponding word.
+    """
+    segmented_joints = {}
 
+    for word, (start_time, end_time) in timestamped_words:
+        joints_list = []
+        for timestamp, jnts in timestamp_joints:
+            if start_time-buffer <= timestamp <= end_time+buffer:
+                joints_list.append(jnts)
+        
+        if joints_list:
+            segmented_joints[(word, start_time)] = joints_list
+    
+
+    
+    return segmented_joints
 
 
 

@@ -5,8 +5,8 @@ from typeformar.dataset_generation.batch_video_preparation import read_pickle_fi
 from typeformar.dataset_generation.loss_array.key_pressed import key_pressed_v2
 
 SPACEBAR_KEY = 57
-MIN_SEQUENCE_LENGTH = 10
-WINDOW_SIZE = 9
+MIN_SEQUENCE_LENGTH = 50
+WINDOW_SIZE = 15
 
 assert WINDOW_SIZE % 2 == 1, "Window size must be odd"
 assert (
@@ -93,16 +93,16 @@ def generate_feature_vector(timestamp_joints):
     )
     return torch.cat(
         (
-            left_tensor,
-            right_tensor,
-            left_normalized,
-            right_normalized,
-            left_velocity,
-            right_velocity,
+            # left_tensor,
+            # right_tensor,
+            # left_normalized,
+            # right_normalized,
+            # left_velocity,
+            # right_velocity,
             left_relative,
             right_relative,
-            left_relative_normalized,
-            right_relative_normalized,
+            # left_relative_normalized,
+            # right_relative_normalized,
         ),
         dim=0,
     ).view(-1)
@@ -114,7 +114,7 @@ def generate_contiguous_sequences():
     """
     all_sequences = []
 
-    for i, trial_datum in enumerate(trials_data):
+    for i, trial_datum in enumerate(trials_data[0:2]):
         last_f = -1
         current_feature_sequence = []
         current_output_sequence = []
@@ -183,8 +183,9 @@ def prepare_dataset():
 if __name__ == "__main__":
     # Prepare the dataset and then print a sample
     dataset = prepare_dataset()
-    for feature_sequence, output_sequence in dataset[0:]:
-        print(feature_sequence.shape)
-        print(feature_sequence)
-        print(output_sequence)
-        break
+    for feature_sequence, output_sequence in dataset:
+        if output_sequence == 0:
+            print(feature_sequence.shape)
+            print(feature_sequence[:, 11:12])
+            print(output_sequence)
+            break

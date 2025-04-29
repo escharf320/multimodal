@@ -5,15 +5,13 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
 
-from typeformar.spacebar_detection.dataset_preparation import prepare_dataset
-
 torch.manual_seed(1)
 
-FEATURE_DIM = 126  # 20 * 3 * 2 * 2  # 20 landmarks * 3 coordinates (x, y, z)
-HIDDEN_DIM = 2  # hyperparameter to be tuned
+FEATURE_DIM = 1  # 20 * 3 * 2 * 2  # 20 landmarks * 3 coordinates (x, y, z)
+HIDDEN_DIM = 5  # hyperparameter to be tuned
 OUTPUT_DIM = 2  # nothing, spacebar down, or spacebar up
 
-EPOCHS = 600
+EPOCHS = 300
 
 ########################################################
 # Architecture
@@ -27,7 +25,13 @@ class SpacebarDetectorLSTM(nn.Module):
         super().__init__()
 
         # Bidirectional LSTM layer
-        self.lstm = nn.LSTM(feature_dim, hidden_dim, bidirectional=True, num_layers=1)
+        self.lstm = nn.LSTM(
+            feature_dim,
+            hidden_dim,
+            bidirectional=True,
+            num_layers=18,
+            batch_first=True,
+        )
 
         # Linear layer to map from hidden state to output (2 * hidden_dim because bidirectional)
         self.fc = nn.Linear(2 * hidden_dim, output_dim)
@@ -46,7 +50,39 @@ class SpacebarDetectorLSTM(nn.Module):
 # Prepare Training Data
 ########################################################
 
-dataset = prepare_dataset()
+dataset = [
+    (
+        torch.tensor([[0, 0, 0, 0, 0, 0, 0]], dtype=torch.float32).T,
+        torch.tensor([0]),
+    ),
+    (
+        torch.tensor([[1, 1, 1, 1, 1, 1, 1]], dtype=torch.float32).T,
+        torch.tensor([0]),
+    ),
+    (
+        torch.tensor([[0, 0, 0, 1, 1, 1, 0, 0]], dtype=torch.float32).T,
+        torch.tensor([1]),
+    ),
+    (
+        torch.tensor([[1, 1, 1, 1, 1, 0, 0, 0]], dtype=torch.float32).T,
+        torch.tensor([1]),
+    ),
+    (
+        torch.tensor([[0, 0, 1, 1, 1, 1, 1]], dtype=torch.float32).T,
+        torch.tensor([1]),
+    ),
+]
+
+test_dataset = [
+    (
+        torch.tensor([[0, 0, 0, 1, 1, 1, 1]], dtype=torch.float32).T,
+        torch.tensor([1]),
+    ),
+    (
+        torch.tensor([[1, 1, 1, 0, 1, 1, 1]], dtype=torch.float32).T,
+        torch.tensor([0]),
+    ),
+]
 
 print("Dataset size: ", len(dataset))
 
@@ -107,6 +143,7 @@ optimizer = optim.SGD(model.parameters(), lr=0.01)
 # See what the scores are before training
 with torch.no_grad():
     feature_sequence, output_sequence = dataset[-1]
+    print(feature_sequence)
     print_output_prediction(output_sequence)
     out_scores = model(feature_sequence)
     print_output_prediction(torch.argmax(out_scores, dim=1))
@@ -133,11 +170,10 @@ with torch.no_grad():
     total = 0
     correct = 0
 
-    for feature_sequence, ground_truth in dataset:
-        if ground_truth == 1:
-            out_scores = model(feature_sequence)
-            total += 1
-            correct += int(torch.sum(torch.argmax(out_scores, dim=1) == ground_truth))
+    for feature_sequence, ground_truth in test_dataset:
+        out_scores = model(feature_sequence)
+        total += 1
+        correct += int(torch.sum(torch.argmax(out_scores, dim=1) == ground_truth))
 
     print(f"Accuracy: {correct / total}")
 

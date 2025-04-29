@@ -13,6 +13,7 @@ pyzbar = "^0.1.9"
 numpy = "<2"
 tqdm = "^4.67.1"
 torch = "^2.6.0"
+pandas = "^2.2.3"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -20,6 +21,7 @@ black = "^25.1.0"
 poethepoet = "^0.33.1"
 scikit-learn = "^1.6.1"
 pylint = "^3.3.6"
+ipykernel = "^6.29.5"
 
 [tool.poe.tasks]
 video-prep = "python typeformar/dataset_generation/batch_video_preparation.py"

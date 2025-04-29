@@ -6,6 +6,12 @@ from typeformar.dataset_generation.loss_array.key_pressed import key_pressed_v2
 
 SPACEBAR_KEY = 57
 MIN_SEQUENCE_LENGTH = 10
+WINDOW_SIZE = 9
+
+assert WINDOW_SIZE % 2 == 1, "Window size must be odd"
+assert (
+    WINDOW_SIZE < MIN_SEQUENCE_LENGTH
+), "Window size must be less than sequence length"
 
 # 1. Read the trial information from the pkl files
 
@@ -102,7 +108,10 @@ def generate_feature_vector(timestamp_joints):
     ).view(-1)
 
 
-def prepare_dataset():
+def generate_contiguous_sequences():
+    """
+    Generate contiguous sequences from the feature vectors
+    """
     all_sequences = []
 
     for i, trial_datum in enumerate(trials_data):
@@ -141,40 +150,40 @@ def prepare_dataset():
                 # We update the last frame seen
                 last_f = f
 
-    # Then, go through the all sequences and cut them into sequences of the same
-    # exact format, but by searching for the times where there are 1's consecutively
-    # and then cutting the sequences at those times with padding of size 5
+    return all_sequences
 
-    new_all_sequences = []
 
-    for feature_sequence, output_sequence in all_sequences:
-        # Find the times where there are 1's consecutively
-        # and then cut the sequences at those times with padding of size 5
+def generate_sliding_windows(all_sequences):
+    """
+    Generate sliding windows from the contiguous sequences.
+    For each sequence, we generate a sliding window of size `WINDOW_SIZE`
+    where the output is the middle element of the window.
+    """
+    all_windows = []
 
-        # Find the times where there are 1's consecutively
-        # Pick randomly between the buffer size
-        L_BUFFER = random.randint(1, 15)
-        R_BUFFER = random.randint(1, 15)
-        for i in range(len(output_sequence)):
-            if output_sequence[i] == 1 and output_sequence[i + 1] != 1:
-                # Find the start of the sequence
-                start = i
-                while start > 0 and output_sequence[start - 1] == 1:
-                    start -= 1
-                new_all_sequences.append(
-                    (
-                        feature_sequence[start - L_BUFFER : i + R_BUFFER + 1],
-                        output_sequence[start - L_BUFFER : i + R_BUFFER + 1],
-                    )
-                )
+    for sequence in all_sequences:
+        feature_sequence, output_sequence = sequence
 
-    return new_all_sequences, all_sequences
+        # Generate the sliding windows
+        for i in range(len(feature_sequence) - WINDOW_SIZE + 1):
+            window = feature_sequence[i : i + WINDOW_SIZE]
+            output = torch.tensor([output_sequence[i + WINDOW_SIZE // 2]])
+            all_windows.append((window, output))
+
+    return all_windows
+
+
+def prepare_dataset():
+    all_sequences = generate_contiguous_sequences()
+    all_windows = generate_sliding_windows(all_sequences)
+
+    return all_windows
 
 
 if __name__ == "__main__":
     # Prepare the dataset and then print a sample
-    dataset, _ = prepare_dataset()
-    for feature_sequence, output_sequence in dataset[1:]:
+    dataset = prepare_dataset()
+    for feature_sequence, output_sequence in dataset[0:]:
         print(feature_sequence.shape)
         print(feature_sequence)
         print(output_sequence)

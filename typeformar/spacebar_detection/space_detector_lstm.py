@@ -40,7 +40,8 @@ class SpacebarDetectorLSTM(nn.Module):
     def forward(self, landmarks_sequence: torch.Tensor) -> torch.Tensor:
         lstm_out, _ = self.lstm(landmarks_sequence)
 
-        out_space = self.fc(lstm_out.view(len(landmarks_sequence), -1))
+        # only take the middle element of the sequence
+        out_space = self.fc(lstm_out[len(landmarks_sequence) // 2].view(1, -1))
         out_scores = F.softmax(out_space, dim=1)
 
         return out_scores
@@ -50,7 +51,7 @@ class SpacebarDetectorLSTM(nn.Module):
 # Prepare Training Data
 ########################################################
 
-_, dataset = prepare_dataset()
+dataset = prepare_dataset()
 
 print("Dataset size: ", len(dataset))
 
@@ -87,7 +88,6 @@ optimizer = optim.SGD(model.parameters(), lr=0.01)
 # Train the model
 for epoch in range(EPOCHS):
     for feature_sequence, output_sequence in dataset:
-
         # Clear the gradients
         model.zero_grad()
 

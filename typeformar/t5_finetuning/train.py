@@ -89,3 +89,7 @@ with torch.no_grad():
         # forward pass
         outputs = model.generate(input_feature)
         print(f"Input: {number}, Output: {outputs[0]}")
+
+# Save the model
+
+torch.save(model.state_dict(), "t5_adapter_model.pth")

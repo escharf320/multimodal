@@ -2,9 +2,9 @@ import signal
 import sys
 import torch
 from num2words import num2words
-from models import device, tokenizer, T5WithAdapter
+from models import device, tokenizer, LLMWithAdapter
 
-model = T5WithAdapter(freeze_t5=True)
+model = LLMWithAdapter(freeze_llm=True)
 model = model.to(device)
 
 # Handle Ctrl+C
@@ -12,7 +12,7 @@ model = model.to(device)
 
 def save_on_quit(sig, frame):
     print("\nSaving model before exiting...")
-    torch.save(model.state_dict(), "t5_adapter_model_checkpoint.pth")
+    torch.save(model.state_dict(), "adapter_model_checkpoint.pth")
     print("Model saved. Exiting...")
     sys.exit(0)
 
@@ -59,7 +59,6 @@ for epoch in range(epochs):
         target_encodings = tokenizer(
             output,
             return_tensors="pt",
-            padding=True,
             truncation=True,
         ).to(device)
 
@@ -108,4 +107,4 @@ with torch.no_grad():
 
 # Save the model
 
-torch.save(model.state_dict(), "t5_adapter_model.pth")
+torch.save(model.state_dict(), "adapter_model.pth")

@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from transformers import T5Tokenizer, T5ForConditionalGeneration
+from transformers import AutoTokenizer, AutoModelForCausalLM
 
 # ================================
 # > Hyperparameters
@@ -9,10 +9,10 @@ from transformers import T5Tokenizer, T5ForConditionalGeneration
 # Adapater parameters
 INPUT_DIM = 20
 HIDDEN_DIM = 20
-OUTPUT_DIM = 768
+OUTPUT_DIM = 3072
 
-# T5 parameters
-T5_MODEL_NAME = "t5-base"
+# LLM parameters
+MODEL_NAME = "meta-llama/Llama-3.2-3B"
 
 # Generation parameters
 MAX_LENGTH = 64
@@ -32,14 +32,14 @@ DEVICE_IDENTIFIER = (
 device = torch.device(DEVICE_IDENTIFIER)
 
 # Load the tokenizer and model
-tokenizer = T5Tokenizer.from_pretrained(T5_MODEL_NAME)
-model = T5ForConditionalGeneration.from_pretrained(T5_MODEL_NAME).to(device)
+tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
+model = AutoModelForCausalLM.from_pretrained(MODEL_NAME).to(device)
 
 
 # Define MLP adapter
 class TimeSeriesAdapter(nn.Module):
     """
-    MLP adapter for the T5 model.
+    MLP adapter for the LLM model.
     """
 
     def __init__(self):
@@ -65,21 +65,21 @@ class TimeSeriesAdapter(nn.Module):
         return self.mlp(x)
 
 
-# Define T5-Adapter model
-class T5WithAdapter(nn.Module):
+# Define LLM-Adapter model
+class LLMWithAdapter(nn.Module):
     """
     T5 model with MLP adapter.
     """
 
-    def __init__(self, freeze_t5=True):
+    def __init__(self, freeze_llm=True):
         super().__init__()
 
         self.adapter = TimeSeriesAdapter()
-        self.t5 = T5ForConditionalGeneration.from_pretrained(T5_MODEL_NAME)
+        self.llm = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
 
         # Freeze the T5 model
-        if freeze_t5:
-            for param in self.t5.parameters():
+        if freeze_llm:
+            for param in self.llm.parameters():
                 param.requires_grad = False
 
     def embed_time_series_features(self, time_series_features):
@@ -93,9 +93,9 @@ class T5WithAdapter(nn.Module):
             1, time_series_features.size(0), -1
         )
         prefix_encodings = tokenizer(prefix, return_tensors="pt").to(device)
-        prefix_embeds = self.t5.encoder.embed_tokens(prefix_encodings.input_ids)
+        prefix_embeds = self.llm.model.embed_tokens(prefix_encodings.input_ids)
         suffix_encodings = tokenizer(suffix, return_tensors="pt").to(device)
-        suffix_embeds = self.t5.encoder.embed_tokens(suffix_encodings.input_ids)
+        suffix_embeds = self.llm.model.embed_tokens(suffix_encodings.input_ids)
 
         # Concatenate the time series embeddings with the token embeddings
         input_embeds = torch.cat([prefix_embeds, ts_embeddings, suffix_embeds], dim=1)
@@ -124,7 +124,7 @@ class T5WithAdapter(nn.Module):
         )
 
         # Feed forward to T5
-        outputs = self.t5(
+        outputs = self.llm(
             inputs_embeds=input_embeds,
             attention_mask=attention_mask,
             labels=labels,
@@ -142,7 +142,7 @@ class T5WithAdapter(nn.Module):
         )
 
         # Generate the output
-        generated_ids = self.t5.generate(
+        generated_ids = self.llm.generate(
             inputs_embeds=input_embeds,
             attention_mask=attention_mask,
             max_length=MAX_LENGTH,

@@ -1,9 +1,25 @@
+import signal
+import sys
 import torch
 from num2words import num2words
 from models import device, tokenizer, T5WithAdapter
 
 model = T5WithAdapter(freeze_t5=True)
 model = model.to(device)
+
+# Handle Ctrl+C
+
+
+def save_on_quit(sig, frame):
+    print("\nSaving model before exiting...")
+    torch.save(model.state_dict(), "t5_adapter_model_checkpoint.pth")
+    print("Model saved. Exiting...")
+    sys.exit(0)
+
+
+# Register the signal handler for SIGINT (Ctrl+C)
+signal.signal(signal.SIGINT, save_on_quit)
+print("Press Ctrl+C to save and exit")
 
 
 train_dataset = []

@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from transformers import AutoTokenizer, AutoModelForCausalLM
+from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 
 # ================================
 # > Hyperparameters
@@ -9,10 +9,10 @@ from transformers import AutoTokenizer, AutoModelForCausalLM
 # Adapater parameters
 INPUT_DIM = 20
 HIDDEN_DIM = 20
-OUTPUT_DIM = 3072
+OUTPUT_DIM = 768
 
 # LLM parameters
-MODEL_NAME = "meta-llama/Llama-3.2-3B"
+MODEL_NAME = "t5-base"
 
 # Generation parameters
 MAX_LENGTH = 64
@@ -33,7 +33,7 @@ device = torch.device(DEVICE_IDENTIFIER)
 
 # Load the tokenizer and model
 tokenizer = AutoTokenizer.from_pretrained(MODEL_NAME)
-model = AutoModelForCausalLM.from_pretrained(MODEL_NAME).to(device)
+model = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME).to(device)
 
 
 # Define MLP adapter
@@ -71,11 +71,11 @@ class LLMWithAdapter(nn.Module):
     T5 model with MLP adapter.
     """
 
-    def __init__(self, freeze_llm=True):
+    def __init__(self, freeze_llm=False):
         super().__init__()
 
         self.adapter = TimeSeriesAdapter()
-        self.llm = AutoModelForCausalLM.from_pretrained(MODEL_NAME)
+        self.llm = AutoModelForSeq2SeqLM.from_pretrained(MODEL_NAME)
 
         # Freeze the T5 model
         if freeze_llm:
@@ -93,9 +93,9 @@ class LLMWithAdapter(nn.Module):
             1, time_series_features.size(0), -1
         )
         prefix_encodings = tokenizer(prefix, return_tensors="pt").to(device)
-        prefix_embeds = self.llm.model.embed_tokens(prefix_encodings.input_ids)
+        prefix_embeds = self.llm.encoder.embed_tokens(prefix_encodings.input_ids)
         suffix_encodings = tokenizer(suffix, return_tensors="pt").to(device)
-        suffix_embeds = self.llm.model.embed_tokens(suffix_encodings.input_ids)
+        suffix_embeds = self.llm.encoder.embed_tokens(suffix_encodings.input_ids)
 
         # Concatenate the time series embeddings with the token embeddings
         input_embeds = torch.cat([prefix_embeds, ts_embeddings, suffix_embeds], dim=1)

@@ -4,13 +4,13 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import torch.optim as optim
-
+import matplotlib.pyplot as plt
 from typeformar.spacebar_detection.dataset_preparation import prepare_dataset
 
 torch.manual_seed(1)
 
-FEATURE_DIM = 126  # 20 * 3 * 2 * 2  # 20 landmarks * 3 coordinates (x, y, z)
-HIDDEN_DIM = 2  # hyperparameter to be tuned
+FEATURE_DIM = 624  # 20 * 3 * 2 * 2  # 20 landmarks * 3 coordinates (x, y, z)
+HIDDEN_DIM = 128  # hyperparameter to be tuned
 OUTPUT_DIM = 2  # nothing, spacebar down, or spacebar up
 
 EPOCHS = 600
@@ -111,6 +111,8 @@ with torch.no_grad():
     out_scores = model(feature_sequence)
     print_output_prediction(torch.argmax(out_scores, dim=1))
 
+losses = []
+
 # Train the model
 for epoch in range(EPOCHS):
     for feature_sequence, output_sequence in dataset[:10]:
@@ -125,8 +127,8 @@ for epoch in range(EPOCHS):
         loss.backward()
         optimizer.step()
 
-    if epoch % 1 == 0:
-        print(f"Epoch {epoch} loss: {loss.item()}")
+    print(f"Epoch {epoch} loss: {loss.item()}")
+    losses.append(loss.item())
 
 # See what the scores are after training
 with torch.no_grad():
@@ -134,10 +136,9 @@ with torch.no_grad():
     correct = 0
 
     for feature_sequence, ground_truth in dataset:
-        if ground_truth == 1:
-            out_scores = model(feature_sequence)
-            total += 1
-            correct += int(torch.sum(torch.argmax(out_scores, dim=1) == ground_truth))
+        out_scores = model(feature_sequence)
+        total += 1
+        correct += int(torch.sum(torch.argmax(out_scores, dim=1) == ground_truth))
 
     print(f"Accuracy: {correct / total}")
 
@@ -146,3 +147,11 @@ models_dir = os.path.join(os.path.dirname(__file__), "..", "..", "models")
 os.makedirs(models_dir, exist_ok=True)
 model_path = os.path.join(models_dir, "spacebar_detector_lstm.pth")
 torch.save(model.state_dict(), model_path)
+
+# Plot the losses
+plt.plot(losses)
+plt.title("Losses")
+plt.xlabel("Epoch")
+plt.ylabel("Loss")
+plt.savefig(os.path.join(models_dir, "lstm_losses.png"))
+plt.close()

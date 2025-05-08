@@ -1,18 +1,46 @@
+import os
 import signal
 import sys
 import torch
 from num2words import num2words
 from models import device, tokenizer, LLMWithAdapter
+from dataset import partition_dataset
 
-model = LLMWithAdapter(freeze_llm=True)
-model = model.to(device)
+# Checkpoints
+CHECKPOINT_PATH = "adapter_model_checkpoint.pth"
+
+
+def save_model(model):
+    torch.save(model.state_dict(), CHECKPOINT_PATH)
+
+
+def load_model():
+    model = LLMWithAdapter(freeze_llm=False)
+    model = model.to(device)
+    model.load_state_dict(torch.load(CHECKPOINT_PATH))
+    return model
+
+
+def load_model_if_it_exists():
+    if os.path.exists(CHECKPOINT_PATH):
+        print("Loading model from checkpoint")
+        return load_model()
+    else:
+        print("No checkpoint found, creating new model")
+        model = LLMWithAdapter(freeze_llm=False)
+        model = model.to(device)
+        return model
+
+
+# Load the model from checkpoint if it exists
+model = load_model_if_it_exists()
 
 # Handle Ctrl+C
 
 
 def save_on_quit(sig, frame):
     print("\nSaving model before exiting...")
-    torch.save(model.state_dict(), "adapter_model_checkpoint.pth")
+    save_model(model)
     print("Model saved. Exiting...")
     sys.exit(0)
 
@@ -21,23 +49,7 @@ def save_on_quit(sig, frame):
 signal.signal(signal.SIGINT, save_on_quit)
 print("Press Ctrl+C to save and exit")
 
-
-train_dataset = []
-
-for i in range(1, 1000):
-    train_dataset.append((i, num2words(i)))
-
-print(train_dataset[20:30])
-
-test_dataset = [
-    (11, "eleven"),
-    (12, "twelve"),
-    (13, "thirteen"),
-    (14, "fourteen"),
-    (15, "fifteen"),
-    (16, "sixteen"),
-    (17, "seventeen"),
-]
+train_dataset, test_dataset = partition_dataset()
 
 epochs = 1000
 optimizer = torch.optim.AdamW(model.parameters(), lr=1e-3)
@@ -51,24 +63,23 @@ epoch_losses = []
 for epoch in range(epochs):
     epoch_loss = 0
 
-    for number, output in train_dataset:
+    for word, feature_vectors in train_dataset:
         # zero the gradients
         optimizer.zero_grad()  # Use optimizer.zero_grad() instead of model.zero_grad()
 
         # build the target encodings
         target_encodings = tokenizer(
-            output,
+            word,
             return_tensors="pt",
             truncation=True,
         ).to(device)
 
         # build the input feature
-        input_feature = torch.zeros(1, 20).to(device)
-        input_feature[0, 0] = number
+        time_series_features = torch.stack(feature_vectors).to(device)
 
         # forward pass - no need to calculate input_embeds and attention_mask separately
         outputs = model(
-            time_series_features=input_feature,
+            time_series_features=time_series_features,
             labels=target_encodings.input_ids,
         )
 
@@ -92,18 +103,13 @@ for epoch in range(epochs):
 model.eval()
 
 with torch.no_grad():
-    for number, output in [
-        (-1, None),
-        (500, None),
-        (1500, None),
-    ]:
+    for word, feature_vectors in test_dataset:
         # build the input feature
-        input_feature = torch.zeros(1, 20).to(device)
-        input_feature[0, 0] = number
+        time_series_features = torch.stack(feature_vectors).to(device)
 
         # forward pass
-        outputs = model.generate(input_feature)
-        print(f"Input: {number}, Output: {outputs[0]}")
+        outputs = model.generate(time_series_features)
+        print(f"Expected: {word}, Actual: {outputs[0]}")
 
 # Save the model
 

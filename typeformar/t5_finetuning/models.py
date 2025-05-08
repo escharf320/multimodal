@@ -7,8 +7,8 @@ from transformers import AutoTokenizer, AutoModelForSeq2SeqLM
 # ================================
 
 # Adapater parameters
-INPUT_DIM = 20
-HIDDEN_DIM = 20
+INPUT_DIM = 624
+HIDDEN_DIM = 700
 OUTPUT_DIM = 768
 
 # LLM parameters

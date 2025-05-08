@@ -93,16 +93,16 @@ def generate_feature_vector(timestamp_joints):
     )
     return torch.cat(
         (
-            # left_tensor,
-            # right_tensor,
-            # left_normalized,
-            # right_normalized,
-            # left_velocity,
-            # right_velocity,
+            left_tensor,
+            right_tensor,
+            left_normalized,
+            right_normalized,
+            left_velocity,
+            right_velocity,
             left_relative,
             right_relative,
-            # left_relative_normalized,
-            # right_relative_normalized,
+            left_relative_normalized,
+            right_relative_normalized,
         ),
         dim=0,
     ).view(-1)

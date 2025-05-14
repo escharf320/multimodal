@@ -7,7 +7,7 @@ from models import device, tokenizer, LLMWithAdapter
 from dataset import partition_dataset
 
 # Checkpoints
-CHECKPOINT_PATH = "adapter_model_checkpoint.pth"
+CHECKPOINT_PATH = "models/adapter_model_checkpoint.pth"
 
 model = LLMWithAdapter(freeze_llm=False)
 model = model.to(device)

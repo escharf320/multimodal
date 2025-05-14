@@ -1,6 +1,6 @@
 # TypeFormAR
 
-A repository for our multimodal final project.
+TypeformAR is an augmented reality typing system. TypeformAR segments hands into joint locations and tracks the user's hands as they type on a desk or printed keyboard. TypeformAR uses HandDetector to find hand joint locations and passes the information to a transformer neural network to classify words based on hand gestures.
 
 ## Installation
 
@@ -36,7 +36,7 @@ The bulk of the project work involved data preparation, model training, and mode
 
 #### Convert log into strings of words
 
-This script parses the log file into human readable words.
+This script parses the log file into human-readable words.
 
 ```bash
 poetry run poe segment_words
@@ -128,7 +128,7 @@ TypeformAR
 
 - Save Segmented Data: The segmented joint data (aligned with words) is saved to a pickle file.
 
-### Frame Timestamp Inferernce
+### Frame Timestamp Inference
 
 - Process QR and Hand Data: The script processes video frames to extract QR codes (UUID and timestamps) and hand landmarks (using HandDetector) from each frame.
 
@@ -173,13 +173,12 @@ TypeformAR
 
 ### Test Segment Words
 
-- Parses the log file into human readable words
+- Parses the log file into human-readable words
 
-### Data Joint Visulaizationver group of
+### Data Joint Visulaization
+- Visualize joint data in 3D 
 
-frames
-
-### Dataset Preperation
+### Dataset Preparation
 
 - Processes video data to extract hand joint features (velocity, normalized positions, etc.), generating contiguous sequences of these features and labels indicating whether the spacebar was pressed
 
@@ -193,9 +192,7 @@ frames
 
 ### Hand Detector
 
-- Runs MediaPipe's HandDetector using bu-ilt in webcam
-
-Visualzie joing data in 3D o
+- Runs MediaPipe's HandDetector using built-in webcam
 
 ### Dataset
 

@@ -232,3 +232,8 @@ $RECYCLE.BIN/
 
 ### Vite ###
 .vite
+
+# TypeformAR Folders
+data
+models
+typeformar

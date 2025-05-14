@@ -26,10 +26,24 @@ Before running any of the commands below, ensure that the files stored in this f
 
 ## Usage
 
-Set and run scripts directly from the `pyproject.toml` file.
+The bulk of the project work involved data preparation, model training, and model evaluation. As such, instead of having one main script, there are several examples to demonstrate components of our overall project. We list out several such demos below.
 
-### Start the hand detector
+| **Disclaimer**: These scripts require that you have the project binaries stored locally. Read the previous section for instructions
+
+### 1. Start the hand detector
 
 ```bash
 poetry run poe hand_detector
+```
+
+### 2. Evaluate the transformer
+
+```bash
+poetry run poe eval_transformer
+```
+
+### 3. Train the transformer (This takes a long time)
+
+```bash
+poetry run poe train_transformer
 ```

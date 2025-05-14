@@ -1,4 +1,4 @@
-from find_words import words_from_log
+from typeformar.dataset_generation.segment_words.find_words import words_from_log
 import os
 
 #### TESTING ####

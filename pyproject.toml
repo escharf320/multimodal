@@ -27,7 +27,10 @@ ipykernel = "^6.29.5"
 num2words = "^0.5.14"
 
 [tool.poe.tasks]
-video-prep = "python typeformar/dataset_generation/batch_video_preparation.py"
+segment_words = "python typeformar/dataset_generation/segment_words/test_segment_words.py"
+timestamp_inference = "python typeformar/dataset_generation/test_timestamp_inference.py"
+eval_transformer = "python typeformar/t5_finetuning/eval.py"
+train_transformer = "python typeformar/t5_finetuning/train.py"
 
 [build-system]
 requires = ["poetry-core"]

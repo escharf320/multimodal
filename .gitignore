@@ -254,3 +254,6 @@ node_modules
 
 # Data
 data/
+
+# Models
+models/

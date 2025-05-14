@@ -1,4 +1,4 @@
-# Multimodal
+# TypeFormAR
 
 A repository for our multimodal final project.
 

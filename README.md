@@ -24,25 +24,43 @@ The link to these files are available here:
 
 Before running any of the commands below, ensure that the files stored in this folder are copied to the project directory. Copy the files directly such that the `models` and `data` folders are in the project root (multimodal directory).
 
+Note that these are a subset of the total files we used within the project and are meant to be purely illustrative for the examples listed below in `Usage`.
+
 ## Usage
 
 The bulk of the project work involved data preparation, model training, and model evaluation. As such, instead of having one main script, there are several examples to demonstrate components of our overall project. We list out several such demos below.
 
 | **Disclaimer**: These scripts require that you have the project binaries stored locally. Read the previous section for instructions
 
-### 1. Start the hand detector
+### 1. Test Indiviudal Data Collection Components
+
+#### Convert log into strings of words
+
+This script parses the log file into human readable words.
 
 ```bash
-poetry run poe hand_detector
+poetry run poe segment_words
+```
+
+#### Segemnt video frames by word
+
+Timestamp inference returns the word, start time, and respective joints.
+
+```bash
+poetry run poe timestamp_inference
 ```
 
 ### 2. Evaluate the transformer
+
+This script will read the adapter model in the `models` directory and evaluate it against the pre-trained adapter transormer model.
 
 ```bash
 poetry run poe eval_transformer
 ```
 
 ### 3. Train the transformer (This takes a long time)
+
+Try training the adapted transformer! Delete the `models/adapter_model_checkpoint.pth` file and tth
 
 ```bash
 poetry run poe train_transformer

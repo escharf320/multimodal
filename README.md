@@ -65,3 +65,18 @@ Try training the adapted transformer! Delete the `models/adapter_model_checkpoin
 ```bash
 poetry run poe train_transformer
 ```
+
+### 4. Test out the key logger Electron application
+
+The code for the key logger exists on the [jacob/type-tool](https://github.com/escharf320/multimodal/tree/jacob/type-tool) branch. A different set of instructions exist on that branch's `README.md`. To switch to that branch, use the following command.
+
+```bash
+git checkout jacob/type-tool
+```
+
+And to switch back to this code:
+
+```bash
+git checkout main
+```
+

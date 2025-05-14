@@ -42,7 +42,7 @@ This script parses the log file into human readable words.
 poetry run poe segment_words
 ```
 
-#### Segemnt video frames by word
+#### Segment video frames by word
 
 Timestamp inference returns the word, start time, and respective joints.
 

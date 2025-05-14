@@ -13,7 +13,7 @@ from typeformar.dataset_generation.frame_timestamp_inference import (
 # Read the logger file
 ##################################
 
-log_file_name = "d1t2"  # input("Enter the video and log file name (e.g. abc): ")
+log_file_name = "d2t1"  # input("Enter the video and log file name (e.g. abc): ")
 logger_file_path = os.path.join(
     os.path.dirname(__file__), "..", "..", "..", "data", f"{log_file_name}.log"
 )
